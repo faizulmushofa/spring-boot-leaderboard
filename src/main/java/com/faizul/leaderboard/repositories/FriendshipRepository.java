@@ -1,4 +1,9 @@
 package com.faizul.leaderboard.repositories;
 
-public class FriendshipRepository {
+import com.faizul.leaderboard.models.Friendship;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+
+import java.util.UUID;
+
+public interface FriendshipRepository extends ReactiveCrudRepository<Friendship,UUID> {
 }

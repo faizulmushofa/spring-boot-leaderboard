@@ -22,8 +22,8 @@ CREATE  TABLE "public".player (
 
 CREATE  TABLE "public".friends ( 
 	id                   uuid  NOT NULL  ,
-	friend_fk            uuid  NOT NULL  ,
-	player_fk            uuid  NOT NULL  ,
+    player_fk            uuid  NOT NULL  ,
+    friend_fk            uuid  NOT NULL  ,
 	CONSTRAINT pk_tbl_0 PRIMARY KEY ( id )
  );
 
@@ -32,7 +32,7 @@ CREATE  TABLE "public".leaderboard (
 	score                integer  NOT NULL  ,
 	created_at           timestamp  NOT NULL  ,
 	game_id              uuid  NOT NULL  ,
-	player_id            integer  NOT NULL  ,
+	player_id            uuid  NOT NULL  ,
 	CONSTRAINT pk_tbl_1 PRIMARY KEY ( id )
  );
 

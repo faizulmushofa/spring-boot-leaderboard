@@ -2,11 +2,10 @@ spring:
   application:
     name: LEADERBOARD-SYSTEM
 
-  datasource:
-    url: postgress://localhost:5432/${POSTGRES_DB}
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/${POSTGRES_DB}
     username: ${POSTGRES_USER}
     password: ${DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
 
   data:
     redis:
@@ -14,5 +13,8 @@ spring:
       port: 6379
       password: ${REDIS_PASSWORD}
 
+  flyway:
+    enabled: false
+
 server:
-  port:8080
+  port: 8080
