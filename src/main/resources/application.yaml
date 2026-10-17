@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: LEADERBOARD-SYSTEM
+
+  datasource:
+    url: postgress://localhost:5432/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ${REDIS_PASSWORD}
+
+server:
+  port:8080

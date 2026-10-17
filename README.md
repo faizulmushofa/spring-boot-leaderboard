@@ -2,14 +2,15 @@
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Java](https://img.shields.io/badge/Java-25-orange.svg)](https://www.oracle.com/java/)
-[![Database](https://img.shields.io/badge/Database-H2-blue.svg)](https://www.h2database.com/)
+[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%2017-blue.svg)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Cache-Redis%207-red.svg)](https://redis.io/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
 ## 📋 [PROJECT INFO]
 * **Project Name**: `leaderboard`
-* **One Line Description**: Proyek latihan backend system design untuk membangun sistem papan peringkat (leaderboard) real-time menggunakan Java & Spring Boot.
+* **One Line Description**: Proyek latihan backend system design untuk membangun sistem papan peringkat (leaderboard) real-time reaktif menggunakan Java & Spring WebFlux.
 * **Problem Statement**: Mempelajari bagaimana menangani perhitungan rank jutaan pemain dengan efisien dibanding query agregasi SQL konvensional yang memicu full-table scan.
 * **Target Users**: Backend developer yang sedang mempelajari implementasi system design.
 * **Learning Reference**: Berdasarkan panduan dari **[System Design One - Leaderboard System Design](https://systemdesign.one/leaderboard-system-design/)**.
@@ -17,17 +18,20 @@
 ---
 
 ## ⚡ [FEATURES]
-* 🎯 **Proyek Inisiasi**: Kerangka dasar aplikasi backend menggunakan Spring Boot 4.
-* 📦 **Persistensi Data**: Konfigurasi H2 In-Memory Database dan Flyway migration.
-* 🛠️ **Fokus Latihan**: Eksplorasi implementasi leaderboard (Top N, Rank Lookup, Relative Rank) sesuai materi referensi.
+* 🎯 **Arsitektur Reaktif**: Non-blocking I/O menggunakan Spring WebFlux & R2DBC.
+* 📦 **Persistensi Data**: PostgreSQL 17 via Spring Data R2DBC (tanpa Hibernate) & Flyway migration.
+* ⚡ **Real-time Ranking**: Redis 7 Sorted Set secara reaktif (`ReactiveRedisTemplate`).
+* 🐳 **Container Ready**: Docker Compose untuk orchestrasi PostgreSQL & Redis.
 
 ---
 
 ## 💻 [TECH STACK]
 * **Language**: Java 25
-* **Framework**: Spring Boot 4.1.1
-* **Database & ORM**: H2 Database, Spring Data JPA, Spring Data JDBC
-* **Migration**: Flyway
+* **Framework**: Spring Boot 4.1.1 (Spring WebFlux)
+* **Reactive Database**: PostgreSQL 17, Spring Data R2DBC, `r2dbc-postgresql`
+* **Cache & Ranking**: Redis 7, Spring Data Redis Reactive (Lettuce)
+* **Migration**: Flyway (driver JDBC `postgresql` runtime)
+* **Infrastructure**: Docker Compose
 * **Tools**: Lombok, Maven Wrapper (`./mvnw`)
 
 ---
@@ -35,9 +39,9 @@
 ## 🏗️ [ARCHITECTURE]
 
 ### Konsep Dasar (Dari Referensi)
-Berdasarkan materi yang dipelajari, sistem dirancang untuk memisahkan write path dan read path:
-* **In-Memory Cache (Redis Sorted Set)**: Menangani kalkulasi ranking $O(\log N)$ secara real-time.
-* **RDBMS (H2 / PostgreSQL)**: Menyimpan data historis dan profil pemain untuk durabilitas.
+Pemisahan write path dan read path:
+* **Redis Sorted Set (Reactive)**: Menangani kalkulasi ranking $O(\log N)$ secara real-time.
+* **PostgreSQL (R2DBC)**: Menyimpan data profil pemain, relasi, dan rekam skor secara asinkron.
 
 ---
 
@@ -49,13 +53,20 @@ git clone https://github.com/faizulmushofa/leaderboard.git
 cd leaderboard
 ```
 
-### 2. Install Dependencies
+### 2. Jalankan Infrastruktur (Docker Compose)
+Salin environment file dan jalankan service database & Redis:
+```bash
+cp .env-example .env
+docker compose up -d
+```
+
+### 3. Install Dependencies
 Pastikan JDK 25 sudah terpasang di sistem:
 ```bash
 ./mvnw clean install -DskipTests
 ```
 
-### 3. Run Dev Command
+### 4. Run Dev Command
 ```bash
 ./mvnw spring-boot:run
 ```
@@ -64,16 +75,23 @@ Pastikan JDK 25 sudah terpasang di sistem:
 
 ## 🔑 [ENV VARIABLES]
 
-Saat ini aplikasi menggunakan konfigurasi bawaan `application.properties`:
+Dikelola melalui file `.env`:
 
-| Nama Properti | Nilai Default | Penjelasan |
+| Nama Properti | Contoh Nilai | Penjelasan |
 | :--- | :--- | :--- |
-| `spring.application.name` | `leaderboard` | Nama identitas aplikasi Spring Boot |
+| `POSTGRES_DB` | `leaderboard_db` | Nama database PostgreSQL |
+| `POSTGRES_USER` | `leader_board` | User database PostgreSQL |
+| `DB_PASSWORD` | `password123` | Password database PostgreSQL |
+| `REDIS_PASSWORD` | `redis123` | Password autentikasi Redis |
 
 ---
 
 ## 🏃 [RUN COMMANDS]
 
+* **Menjalankan Database & Cache**:
+  ```bash
+  docker compose up -d
+  ```
 * **Menjalankan Aplikasi**:
   ```bash
   ./mvnw spring-boot:run
@@ -91,20 +109,24 @@ Saat ini aplikasi menggunakan konfigurasi bawaan `application.properties`:
 
 ## 📁 [PROJECT STRUCTURE]
 
-Struktur folder aktual repositori saat ini:
-
 ```
 leaderboard/
-├── pom.xml                                           # Dependensi dan build konfigurasi
+├── compose.yaml                                      # Docker Compose (Postgres & Redis)
+├── .env-example                                      # Template variabel lingkungan
+├── pom.xml                                           # Konfigurasi dependensi reaktif
 ├── src/
 │   ├── main/
 │   │   ├── java/
 │   │   │   └── com/
 │   │   │       └── faizul/
 │   │   │           └── leaderboard/
-│   │   │               └── LeaderboardApplication.java # Main entrypoint
+│   │   │               ├── models/                   # Domain entities
+│   │   │               ├── repositories/             # R2DBC repositories
+│   │   │               ├── services/                 # Reactive business logic
+│   │   │               └── LeaderboardApplication.java # Entrypoint
 │   │   └── resources/
-│   │       └── application.properties                # Konfigurasi aplikasi
+│   │       ├── application.yaml                      # Konfigurasi aplikasi
+│   │       └── db/migration/                         # Skrip migrasi Flyway
 │   └── test/
 │       └── java/
 │           └── com/
@@ -117,8 +139,8 @@ leaderboard/
 
 ## 📝 [NOTES / DECISIONS]
 
-* **Status Proyek**: Masih tahap inisiasi awal (setup project & dependencies).
-* **Fokus Selanjutnya**: Mengembangkan model database, koneksi Redis, serta REST API untuk skor dan ranking.
+* **Peralihan ke Reactive**: Migrasi dari Spring MVC/JPA ke Spring WebFlux + R2DBC + Redis Reactive untuk efisiensi throughput tinggi non-blocking.
+* **Flyway Migration**: Memakai JDBC PostgreSQL runtime khusus fase migrasi skema saat startup.
 
 ---
 
