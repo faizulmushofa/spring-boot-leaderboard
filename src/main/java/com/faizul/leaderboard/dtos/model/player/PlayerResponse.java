@@ -1,4 +1,4 @@
-package com.faizul.leaderboard.dtos.player;
+package com.faizul.leaderboard.dtos.model.player;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

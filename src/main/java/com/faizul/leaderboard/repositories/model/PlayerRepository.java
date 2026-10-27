@@ -1,7 +1,6 @@
-package com.faizul.leaderboard.repositories;
+package com.faizul.leaderboard.repositories.model;
 
 import com.faizul.leaderboard.models.Player;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;

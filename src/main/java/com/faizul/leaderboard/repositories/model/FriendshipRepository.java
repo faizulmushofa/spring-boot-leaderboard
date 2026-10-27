@@ -1,4 +1,4 @@
-package com.faizul.leaderboard.repositories;
+package com.faizul.leaderboard.repositories.model;
 
 import com.faizul.leaderboard.models.Friendship;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;

@@ -36,3 +36,11 @@ build/
 .env
 
 .agents
+
+docs/task/*
+docs/task/
+
+.DS_store
+
+notes/*
+notes

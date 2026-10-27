@@ -1,7 +1,7 @@
 package com.faizul.leaderboard.mapper;
 
-import com.faizul.leaderboard.dtos.player.PlayerCreateRequest;
-import com.faizul.leaderboard.dtos.player.PlayerResponse;
+import com.faizul.leaderboard.dtos.model.player.PlayerCreateRequest;
+import com.faizul.leaderboard.dtos.model.player.PlayerResponse;
 import com.faizul.leaderboard.models.Player;
 import org.mapstruct.Mapper;
 

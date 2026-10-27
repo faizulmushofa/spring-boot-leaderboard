@@ -1,8 +1,8 @@
 package com.faizul.leaderboard.controllers;
 
-import com.faizul.leaderboard.dtos.player.PlayerCreateRequest;
-import com.faizul.leaderboard.dtos.player.PlayerResponse;
-import com.faizul.leaderboard.services.PlayerService;
+import com.faizul.leaderboard.dtos.model.player.PlayerCreateRequest;
+import com.faizul.leaderboard.dtos.model.player.PlayerResponse;
+import com.faizul.leaderboard.services.model.PlayerServiceImp;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +17,13 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class PlayerController {
 
-    private final PlayerService playerService;
+    private final PlayerServiceImp playerServiceImp;
 
     @PostMapping
     public Mono<ResponseEntity<PlayerResponse>> create(
             @Valid @RequestBody PlayerCreateRequest request
     ) {
-        return playerService.save(request)
+        return playerServiceImp.save(request)
                 .map(response -> ResponseEntity.status(201).body(response));
     }
 }
