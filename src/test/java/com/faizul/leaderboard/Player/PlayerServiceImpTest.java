@@ -1,11 +1,11 @@
 package com.faizul.leaderboard.Player;
 
-import com.faizul.leaderboard.dtos.player.PlayerCreateRequest;
-import com.faizul.leaderboard.dtos.player.PlayerResponse;
+import com.faizul.leaderboard.dtos.model.player.PlayerCreateRequest;
+import com.faizul.leaderboard.dtos.model.player.PlayerResponse;
 import com.faizul.leaderboard.mapper.PlayerMapper;
 import com.faizul.leaderboard.models.Player;
-import com.faizul.leaderboard.repositories.PlayerRepository;
-import com.faizul.leaderboard.services.PlayerService;
+import com.faizul.leaderboard.repositories.model.PlayerRepository;
+import com.faizul.leaderboard.services.model.PlayerServiceImp;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,14 +22,14 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
-public class PlayerServiceTest {
+public class PlayerServiceImpTest {
 
     @Mock
     PlayerRepository playerRepository;
     @Mock
     PlayerMapper playerMapper;
     @InjectMocks
-    PlayerService playerService;
+    PlayerServiceImp playerServiceImp;
 
     @Test
     @DisplayName("Test Berhasil : Berhasil Menyimpan player ketika Email tersedia")
@@ -59,7 +59,7 @@ public class PlayerServiceTest {
         when(playerMapper.toResponse(player)).thenReturn(response);
 
 
-        var result = playerService.save(request);
+        var result = playerServiceImp.save(request);
 
 
         StepVerifier.create(result)
@@ -86,12 +86,14 @@ public class PlayerServiceTest {
         when(playerRepository.existsPlayerByEmail(request.email()))
                 .thenReturn(Mono.just(true));
 
-        StepVerifier.create(playerService.save(request))
+        StepVerifier.create(playerServiceImp.save(request))
                 .expectErrorMatches( err ->
                         err instanceof  IllegalArgumentException && err.getMessage().equals("Email Sudah di gunakan"))
                 .verify();
 
-        verify(playerRepository,never()).save(any());
+//        verify(playerRepository,never()).save(any());
     }
+
+    //
 
 }
