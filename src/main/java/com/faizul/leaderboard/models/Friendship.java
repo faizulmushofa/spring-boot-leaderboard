@@ -20,10 +20,10 @@ public class Friendship {
     @Id
     private UUID id;
 
-    @Column("player_id")
-    private UUID player_id;
+    @Column("player_fk")
+    private UUID player_fk;
 
-    @Column("friend_id")
-    private UUID friend_id;
+    @Column("friend_fk")
+    private UUID friend_fk;
 
 }
