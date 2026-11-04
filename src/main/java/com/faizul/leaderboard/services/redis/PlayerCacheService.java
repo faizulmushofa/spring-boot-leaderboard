@@ -49,4 +49,9 @@ public class PlayerCacheService {
                 });
     }
 
+    public Mono<Boolean> delete(String playerId) {
+        return redisTemplate.opsForHash()
+                .delete(PREFIX + playerId);
+    }
+
 }

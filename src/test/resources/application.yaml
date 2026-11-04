@@ -1,0 +1,14 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/testdb
+    username: test
+    password: test
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: test
+
+  flyway:
+    enabled: false
