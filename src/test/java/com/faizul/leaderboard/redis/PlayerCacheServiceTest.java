@@ -96,4 +96,18 @@ public class PlayerCacheServiceTest {
         StepVerifier.create(playerCacheService.findById(playerId))
                 .verifyComplete();
     }
+
+    @Test
+    @DisplayName("delete: berhasil menghapus cache player")
+    void deleteCacheHit() {
+        var playerId = "uuid-123";
+
+        when(hashOps.delete("player:" + playerId)).thenReturn(Mono.just(true));
+
+        StepVerifier.create(playerCacheService.delete(playerId))
+                .expectNext(true)
+                .verifyComplete();
+
+        verify(hashOps).delete("player:" + playerId);
+    }
 }
