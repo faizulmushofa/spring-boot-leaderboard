@@ -20,19 +20,22 @@ import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 
-
 @ExtendWith(MockitoExtension.class)
 public class PlayerServiceImpTest {
 
     @Mock
     PlayerRepository playerRepository;
+
     @Mock
     PlayerMapper playerMapper;
+
     @InjectMocks
     PlayerServiceImp playerServiceImp;
 
+    // Skenario: User mendaftarkan player baru dengan email yang belum pernah terdaftar.
+    // Ekspektasi: Pengecekan email lolos (exists == false), entity disimpan ke database PostgreSQL, dan mengembalikan PlayerResponse.
     @Test
-    @DisplayName("Test Berhasil : Berhasil Menyimpan player ketika Email tersedia")
+    @DisplayName("save: berhasil menyimpan player ketika email belum digunakan")
     void savesPlayerWhenEmailIsAvailable() {
         var gameId = UUID.randomUUID();
         var request = new PlayerCreateRequest(
@@ -58,22 +61,20 @@ public class PlayerServiceImpTest {
 
         when(playerMapper.toResponse(player)).thenReturn(response);
 
-
         var result = playerServiceImp.save(request);
-
 
         StepVerifier.create(result)
                 .expectNext(response)
                 .verifyComplete();
 
-
         verify(playerRepository).save(player);
     }
 
-
+    // Skenario: User mencoba mendaftar dengan email yang sudah ada di database.
+    // Ekspektasi: Pengecekan email mendeteksi duplikat (exists == true), penyimpanan dibatalkan, dan melempar IllegalArgumentException ("Email Sudah di gunakan").
     @Test
-    @DisplayName("gagal Menyimpan player ketika Email tidak tersedia")
-    void savePlayerWhenEmailIsUnavailable(){
+    @DisplayName("save: gagal menyimpan player ketika email sudah digunakan")
+    void savePlayerWhenEmailIsUnavailable() {
         var gameId = UUID.randomUUID();
         var request = new PlayerCreateRequest(
                 "user1",
@@ -87,13 +88,21 @@ public class PlayerServiceImpTest {
                 .thenReturn(Mono.just(true));
 
         StepVerifier.create(playerServiceImp.save(request))
-                .expectErrorMatches( err ->
-                        err instanceof  IllegalArgumentException && err.getMessage().equals("Email Sudah di gunakan"))
+                .expectErrorMatches(err ->
+                        err instanceof IllegalArgumentException && err.getMessage().equals("Email Sudah di gunakan"))
                 .verify();
 
-//        verify(playerRepository,never()).save(any());
+        verify(playerRepository, never()).save(any());
     }
 
-    //
-
+    // Skenario: Pemanggilan method save dengan body null.
+    // Ekspektasi: Validasi awal gagal dan melempar IllegalArgumentException ("Data request kosong").
+    @Test
+    @DisplayName("save: gagal ketika request bernilai null")
+    void savePlayerNullRequest() {
+        StepVerifier.create(playerServiceImp.save(null))
+                .expectErrorMatches(err ->
+                        err instanceof IllegalArgumentException && err.getMessage().equals("Data request kosong"))
+                .verify();
+    }
 }

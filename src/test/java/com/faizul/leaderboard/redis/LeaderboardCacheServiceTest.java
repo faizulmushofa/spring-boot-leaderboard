@@ -9,8 +9,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Range;
+import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ReactiveZSetOperations;
+import org.springframework.data.redis.core.ZSetOperations;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -39,6 +41,8 @@ public class LeaderboardCacheServiceTest {
         when(redisTemplate.<String, String>opsForZSet()).thenReturn(zSetOps);
     }
 
+    // Skenario: Menambahkan atau mengupdate skor pemain ke dalam Redis Sorted Set (ZSet).
+    // Ekspektasi: Redis ZSet menambahkan key "leaderboard:{gameId}" dengan member playerId dan score, mengembalikan Mono<Boolean> true.
     @Test
     @DisplayName("addScore: berhasil menambah skor player ke ZSET")
     void addScore() {
@@ -51,6 +55,8 @@ public class LeaderboardCacheServiceTest {
         verify(zSetOps).add(KEY, PLAYER_ID, 100.0);
     }
 
+    // Skenario: Menambah (increment) skor yang sudah ada pada player sebesar delta tertentu.
+    // Ekspektasi: Redis ZINCRBY dijalankan dan mengembalikan akumulasi skor terbaru (100.0 + 50.0 = 150.0).
     @Test
     @DisplayName("incrementScore: berhasil menambahkan nilai skor player")
     void incrementScore() {
@@ -63,6 +69,8 @@ public class LeaderboardCacheServiceTest {
         verify(zSetOps).incrementScore(KEY, PLAYER_ID, 50.0);
     }
 
+    // Skenario (Cache Hit): Membaca nilai skor pemain yang tercatat di Redis ZSet.
+    // Ekspektasi: Redis ZSCORE mengembalikan Double nilai skor pemain.
     @Test
     @DisplayName("getScore: player ada — kembalikan skor")
     void getScoreHit() {
@@ -75,6 +83,8 @@ public class LeaderboardCacheServiceTest {
         verify(zSetOps).score(KEY, PLAYER_ID);
     }
 
+    // Skenario (Cache Miss): Membaca skor pemain yang belum pernah terdaftar di Redis ZSet.
+    // Ekspektasi: Redis ZSCORE mengembalikan Mono.empty() tanpa error.
     @Test
     @DisplayName("getScore: player tidak ada — kembalikan empty")
     void getScoreMiss() {
@@ -86,6 +96,8 @@ public class LeaderboardCacheServiceTest {
         verify(zSetOps).score(KEY, PLAYER_ID);
     }
 
+    // Skenario: Mengambil urutan peringkat player berdasarkan skor tertinggi ke terendah (ZREVRANK).
+    // Ekspektasi: Mengembalikan indeks posisi 0-based pemain (misal: 0L untuk peringkat ke-1).
     @Test
     @DisplayName("getRank: kembalikan peringkat 0-based")
     void getRank() {
@@ -98,6 +110,8 @@ public class LeaderboardCacheServiceTest {
         verify(zSetOps).reverseRank(KEY, PLAYER_ID);
     }
 
+    // Skenario: Mengambil daftar playerId urutan 1 s/d count tertinggi (tanpa skor).
+    // Ekspektasi: Redis ZREVRANGE mengembalikan stream daftar playerId sesuai rentang Range.closed(0, count-1).
     @Test
     @DisplayName("getTop: kembalikan daftar playerId teratas")
     void getTop() {
@@ -111,6 +125,26 @@ public class LeaderboardCacheServiceTest {
         verify(zSetOps).reverseRange(KEY, Range.closed(0L, 2L));
     }
 
+    // Skenario: Mengambil daftar pemain teratas lengkap dengan nilai skornya masing-masing.
+    // Ekspektasi: Redis ZREVRANGE ... WITHSCORES mengembalikan tuple berisi (playerId, score) terurut skor tertinggi.
+    @Test
+    @DisplayName("getTopWithScore: kembalikan daftar tuple playerId beserta skornya")
+    void getTopWithScore() {
+        ZSetOperations.TypedTuple<String> tuple1 = new DefaultTypedTuple<>("p1", 500.0);
+        ZSetOperations.TypedTuple<String> tuple2 = new DefaultTypedTuple<>("p2", 400.0);
+
+        when(zSetOps.reverseRangeWithScores(KEY, Range.closed(0L, 1L)))
+                .thenReturn(Flux.just(tuple1, tuple2));
+
+        StepVerifier.create(leaderboardCacheService.getTopWithScore(GAME_ID, 2L))
+                .expectNext(tuple1, tuple2)
+                .verifyComplete();
+
+        verify(zSetOps).reverseRangeWithScores(KEY, Range.closed(0L, 1L));
+    }
+
+    // Skenario: Menghapus player dari Sorted Set leaderboard (ZREM).
+    // Ekspektasi: Member playerId dihapus dari key ZSet, mengembalikan jumlah baris yang terhapus (1L).
     @Test
     @DisplayName("removePlayer: berhasil menghapus player dari leaderboard")
     void removePlayer() {

@@ -39,8 +39,10 @@ public class PlayerCacheServiceTest {
         when(redisTemplate.<String, String>opsForHash()).thenReturn(hashOps);
     }
 
+    // Skenario: Menyimpan profil ringkas pemain ke struktur data Redis Hash (HSET/HMSET).
+    // Ekspektasi: Seluruh field profil (name, profileImage, location, updateAt) tersimpan ke key "player:{playerId}".
     @Test
-    @DisplayName("save: berhasil menyimpan player cache ke Redis")
+    @DisplayName("save: berhasil menyimpan player cache ke Redis Hash")
     void savePlayerCache() {
         var playerId = "uuid-123";
         var cache = new PlayerCache("Rick", "s3://img.jpg", "Jakarta", "2026-01-01T00:00:00Z");
@@ -53,6 +55,8 @@ public class PlayerCacheServiceTest {
         verify(hashOps).putAll(anyString(), anyMap());
     }
 
+    // Skenario: Menyimpan profil pemain yang belum mengunggah gambar avatar (profileImage bernilai null).
+    // Ekspektasi: Method mengganti nilai null dengan string kosong "" untuk menghindari NullPointerException di Redis Map.
     @Test
     @DisplayName("save: profileImage null tidak throw NPE")
     void savePlayerCacheWithNullProfileImage() {
@@ -65,6 +69,8 @@ public class PlayerCacheServiceTest {
                 .verifyComplete();
     }
 
+    // Skenario (Cache Hit): Membaca cache profil pemain dari Redis Hash yang sudah ada datanya.
+    // Ekspektasi: Redis HGETALL mengembalikan map field-value, direkonstruksi menjadi objek record PlayerCache.
     @Test
     @DisplayName("findById: cache hit — kembalikan PlayerCache")
     void findByIdCacheHit() {
@@ -86,6 +92,8 @@ public class PlayerCacheServiceTest {
                 .verifyComplete();
     }
 
+    // Skenario (Cache Miss): Membaca profil pemain yang tidak ada di cache Redis.
+    // Ekspektasi: HGETALL mengembalikan entri kosong, method mengembalikan Mono.empty() tanpa melempar error.
     @Test
     @DisplayName("findById: cache miss — kembalikan empty")
     void findByIdCacheMiss() {
@@ -97,6 +105,8 @@ public class PlayerCacheServiceTest {
                 .verifyComplete();
     }
 
+    // Skenario: Menghapus cache profil pemain dari Redis Hash (HDEL/DEL key).
+    // Ekspektasi: Key "player:{playerId}" dihapus dari Redis, mengembalikan status boolean true.
     @Test
     @DisplayName("delete: berhasil menghapus cache player")
     void deleteCacheHit() {
