@@ -3,6 +3,7 @@ package com.faizul.leaderboard.services.redis;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -58,13 +59,18 @@ public class LeaderboardCacheService {
                 .reverseRange(leaderboardKey, Range.closed(0L,count -1));
     }
 
-    public Mono<Long> removePlayer (String gameId,String playerId){
-
+    public Flux<ZSetOperations.TypedTuple<String>> getTopWithScore(String gameId, Long count) {
         String leaderboardKey = PREFIX + gameId;
 
-        return  redisTemplate.opsForZSet()
-                .remove(leaderboardKey,playerId);
+        return redisTemplate.opsForZSet()
+                .reverseRangeWithScores(leaderboardKey, Range.closed(0L, count - 1));
+    }
 
+    public Mono<Long> removePlayer(String gameId, String playerId) {
+        String leaderboardKey = PREFIX + gameId;
+
+        return redisTemplate.opsForZSet()
+                .remove(leaderboardKey, playerId);
     }
 
 
