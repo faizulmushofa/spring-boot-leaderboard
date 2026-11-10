@@ -3,8 +3,9 @@ package com.faizul.leaderboard.services.model;
 import com.faizul.leaderboard.dtos.model.game.GameCreateRequest;
 import com.faizul.leaderboard.dtos.model.game.GameResponse;
 import com.faizul.leaderboard.mapper.GameMapper;
+import com.faizul.leaderboard.models.Game;
 import com.faizul.leaderboard.repositories.model.GameRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,7 +15,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class GameService {
 
     private final GameRepository gameRepository;
@@ -37,7 +38,7 @@ public class GameService {
 
                     Game game = gameMapper.toEntity(request);
                     game.setId(UUID.randomUUID());
-                    game.setCreated_at(Timestamp.from(Instant.now()));
+                    game.setCreatedAt(Timestamp.from(Instant.now()));
                     return gameRepository.save(game)
                             .map(gameMapper::toResponse);
                 });
@@ -65,7 +66,7 @@ public class GameService {
 
     public Flux<GameResponse> findAll(){
         return gameRepository.findAll()
-                .filter(game -> game.getDeleted_at() == null)
+                .filter(game -> game.getDeletedAt() == null)
                 .map(gameMapper::toResponse);
     }
 
@@ -82,7 +83,7 @@ public class GameService {
                         new IllegalArgumentException("Game tidak ditemukan")
                 ))
                 .flatMap(game -> {
-                    game.setDeleted_at(Timestamp.from(Instant.now()));
+                    game.setDeletedAt(Timestamp.from(Instant.now()));
                     return gameRepository.save(game);
                 })
                 .map(game -> "Game berhasil dihapus");

@@ -25,9 +25,9 @@ public class Game {
     private String name;
 
     @Column("created_at")
-    private Timestamp created_at;
+    private Timestamp createdAt;
 
     @Column("deleted_at")
-    private Timestamp deleted_at;
+    private Timestamp deletedAt;
 
 }
