@@ -21,9 +21,9 @@ public class Friendship {
     private UUID id;
 
     @Column("player_fk")
-    private UUID player_fk;
+    private UUID playerFk;
 
     @Column("friend_fk")
-    private UUID friend_fk;
+    private UUID friendFk;
 
 }

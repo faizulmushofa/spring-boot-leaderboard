@@ -19,27 +19,27 @@ import java.util.UUID;
 public class Player {
 
     @Id
-    private UUID id; //4 byte
+    private UUID id;
 
     @Column("name")
-    private String name; //4 byte
+    private String name;
 
     @Column("email")
     private String email;
 
     @Column("created_at")
-    private Timestamp created_at;
+    private Timestamp createdAt;
 
     @Column("last_login")
-    private Timestamp last_login;
+    private Timestamp lastLogin;
 
     @Column("profile_image")
-    private String profile_image;
+    private String profileImage;
 
     @Column("location")
     private String location;
 
     @Column("game_id")
-    private UUID game_id;
+    private UUID gameId;
 
 }

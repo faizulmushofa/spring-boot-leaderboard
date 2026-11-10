@@ -25,12 +25,12 @@ public class Leaderboard {
     private Integer score;
 
     @Column("created_at")
-    private Timestamp created_at;
+    private Timestamp createdAt;
 
     @Column("game_id")
-    private UUID game_id;
+    private UUID gameId;
 
     @Column("player_id")
-    private UUID player_id;
+    private UUID playerId;
 
 }
